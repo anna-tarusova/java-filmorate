@@ -23,9 +23,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @SpringBootTest
 class FilmorateApplicationTests {
 	private ConfigurableApplicationContext context;
-	private final static String BASE_URL = "http://localhost:8080/";
-	private final static String FILMS = BASE_URL + "films";
-	private final static String USERS = BASE_URL + "users";
+	private static final String BASE_URL = "http://localhost:8080/";
+	private static final String FILMS = BASE_URL + "films";
+	private static final String USERS = BASE_URL + "users";
 	private final HttpClient client = HttpClient.newHttpClient();
 	private static Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
