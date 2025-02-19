@@ -1,6 +1,8 @@
 package ru.yandex.practicum.filmorate.model;
 
 import lombok.Data;
+import lombok.experimental.FieldDefaults;
+import lombok.AccessLevel;
 
 import java.time.LocalDate;
 
@@ -8,10 +10,11 @@ import java.time.LocalDate;
  * Film.
  */
 @Data
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Film {
-    private long id;
-    private String name;
-    private String description;
-    private LocalDate releaseDate;
-    private int duration;
+    long id;
+    String name;
+    String description;
+    LocalDate releaseDate;
+    int duration;
 }
