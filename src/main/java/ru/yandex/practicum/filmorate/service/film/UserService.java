@@ -42,10 +42,14 @@ public class UserService {
         userStorage.update(user2);
     }
 
-    public Set<Long> findIntersectionOfFriends(Set<Long> set1, Set<Long> set2) {
-        Set<Long> intersection = new HashSet<>();
-        intersection.retainAll(set2);
-        return intersection;
+    public List<User> findIntersectionOfFriends(long userId1, long userId2) {
+        User user = userStorage.getUser(userId1);
+        User user2 = userStorage.getUser(userId2);
+        Set<Long> friendsOfUser1 = user.getFriends();
+        Set<Long> friendsOfUser2 = user2.getFriends();
+        Set<Long> intersection = new HashSet<>(friendsOfUser1);
+        intersection.retainAll(friendsOfUser2);
+        return intersection.stream().map(id -> userStorage.getUser(id)).toList();
     }
 
     public List<User> getFriends(long id) {
@@ -62,6 +66,7 @@ public class UserService {
     }
 
     public User updateUser(User user) {
+        userStorage.ensureUserExists(user.getId());
         return userStorage.update(user);
     }
 

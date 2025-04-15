@@ -22,6 +22,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 class FilmorateApplicationTests {
@@ -175,12 +176,15 @@ class FilmorateApplicationTests {
 				.uri(URI.create(FILMS))
 				.header("Content-type", "application/json")
 				.PUT(HttpRequest.BodyPublishers.ofString("{\n" +
-						"  \"id\": 1,\n" +
-						"  \"name\": \"Anna\"" +
+						"  \"id\": 999,\n" +
+						"  \"name\": \"nisi eiusmod\",\n" +
+						"  \"description\": \"adipisicing\",\n" +
+						"  \"releaseDate\": \"1967-03-25\",\n" +
+						"  \"duration\": 100\n" +
 						"}")).build();
 		response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-		assertEquals(500, response.statusCode());
+		assertEquals(404, response.statusCode());
 	}
 
 	@Test
@@ -383,7 +387,7 @@ class FilmorateApplicationTests {
 						"}")).build();
 		response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-		assertEquals(500, response.statusCode());
+		assertEquals(404, response.statusCode());
 	}
 
 	@Test
@@ -753,6 +757,59 @@ class FilmorateApplicationTests {
 		assertEquals(2, films.get(1).getId());
 		assertEquals(1, films.getLast().getId());
 
+	}
+
+	@Test
+	public void users_commonFriends() throws IOException, InterruptedException {
+		//Arrange
+		for (int i = 0; i < 10; i++) {
+			HttpRequest request = HttpRequest.newBuilder()
+					.uri(URI.create(USERS))
+					.header("Content-type", "application/json")
+					.POST(HttpRequest.BodyPublishers.ofString("{\n" +
+							"  \"login\": \"dolore_" + i + "\",\n" +
+							"  \"name\": \"Nick Name_" + i + "\",\n" +
+							"  \"email\": \"mail@mail_" + i + ".ru\",\n" +
+							"  \"birthday\": \"1946-09-20\"\n" +
+							"}")).build();
+			HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+			assertEquals(200, response.statusCode());
+		}
+
+		for (int i = 2; i <= 4; i++) {
+			HttpRequest request = HttpRequest.newBuilder()
+					.uri(URI.create(USERS + "/1/friends/" + i))
+					.header("Content-type", "application/json")
+					.PUT(HttpRequest.BodyPublishers.ofString("")).build();
+			HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+			assertEquals(200, response.statusCode());
+		}
+
+		for (int i = 3; i <= 4; i++) {
+			HttpRequest request = HttpRequest.newBuilder()
+					.uri(URI.create(USERS + "/2/friends/" + i))
+					.PUT(HttpRequest.BodyPublishers.ofString(""))
+					.build();
+			HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+			assertEquals(200, response.statusCode());
+		}
+
+		//Action
+		HttpRequest request = HttpRequest.newBuilder()
+				.uri(URI.create(USERS + "/1/friends/common/2"))
+				.header("Content-type", "application/json")
+				.GET()
+				.build();
+		HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+		//Assert
+		assertEquals(200, response.statusCode());
+		String responseText = response.body();
+		Type listType = new TypeToken<List<User>>() {}.getType();
+		List<User> users = gson.fromJson(responseText, listType);
+		assertEquals(2, users.size());
+        assertTrue(users.stream().anyMatch(u -> u.getId() == 3));
+		assertTrue(users.stream().anyMatch(u -> u.getId() == 4));
 	}
 
 	@AfterEach

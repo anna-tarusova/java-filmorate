@@ -46,22 +46,23 @@ public class FilmService {
     }
 
     public List<Film> getFilms() {
-        return this.filmStorage.getFilms();
+        return filmStorage.getFilms();
     }
 
     public Film createFilm(Film film) {
-        return this.filmStorage.create(film);
+        return filmStorage.create(film);
     }
 
     public Film update(Film film) {
-        return this.filmStorage.update(film);
+        filmStorage.ensureFilmExists(film.getId());
+        return filmStorage.update(film);
     }
 
     public void delete(long id) {
-        this.filmStorage.delete(id);
+        filmStorage.delete(id);
     }
 
     public Film getFilm(long id) {
-        return this.filmStorage.getFilm(id);
+        return filmStorage.getFilm(id);
     }
 }

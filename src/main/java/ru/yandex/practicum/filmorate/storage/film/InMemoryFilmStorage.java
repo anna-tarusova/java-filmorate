@@ -84,6 +84,13 @@ public class InMemoryFilmStorage implements FilmStorage {
         return result;
     }
 
+    @Override
+    public void ensureFilmExists(long id) throws NotFoundException {
+        if (!films.containsKey(id)) {
+            throw new NotFoundException("Фильм не существует");
+        }
+    }
+
     public static void checkFilmBeforeAddOrUpdate(Film film) {
         if (film.getName().isEmpty()
                 || (film.getDescription() != null && film.getDescription().length() > 200)
