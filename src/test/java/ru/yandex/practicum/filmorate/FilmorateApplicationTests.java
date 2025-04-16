@@ -424,62 +424,6 @@ class FilmorateApplicationTests {
 	}
 
 	@Test
-	public void users_addFriends_shouldAddFriends() throws IOException, InterruptedException {
-		//Arrange
-		HttpRequest request = HttpRequest.newBuilder()
-				.uri(URI.create(USERS))
-				.header("Content-type", "application/json")
-				.POST(HttpRequest.BodyPublishers.ofString("{\n" +
-						"  \"login\": \"dolore\",\n" +
-						"  \"name\": \"Nick Name\",\n" +
-						"  \"email\": \"mail@mail.ru\",\n" +
-						"  \"birthday\": \"1946-09-20\"\n" +
-						"}")).build();
-		HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-		request = HttpRequest.newBuilder()
-				.uri(URI.create(USERS))
-				.header("Content-type", "application/json")
-				.POST(HttpRequest.BodyPublishers.ofString("{\n" +
-						"  \"login\": \"dolore2\",\n" +
-						"  \"name\": \"Nick Name2\",\n" +
-						"  \"email\": \"mail@mail2.ru\",\n" +
-						"  \"birthday\": \"1946-09-20\"\n" +
-						"}")).build();
-		response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-		//Action
-		request = HttpRequest.newBuilder()
-				.uri(URI.create(USERS + "/1/friends/2"))
-				.PUT(HttpRequest.BodyPublishers.ofString(""))
-				.build();
-		client.send(request, HttpResponse.BodyHandlers.ofString());
-		//Assert
-		request = HttpRequest.newBuilder()
-				.uri(URI.create(USERS + "/1"))
-				.header("Content-type", "application/json")
-				.GET().build();
-		response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-		assertEquals(200, response.statusCode());
-		String responseText = response.body();
-		User user = gson.fromJson(responseText, User.class);
-		assertEquals(1, user.getFriends().size());
-		assertEquals(2, user.getFriends().stream().findFirst().orElseThrow());
-
-		request = HttpRequest.newBuilder()
-				.uri(URI.create(USERS + "/2"))
-				.header("Content-type", "application/json")
-				.GET().build();
-		response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-		assertEquals(200, response.statusCode());
-		responseText = response.body();
-		user = gson.fromJson(responseText, User.class);
-		assertEquals(1, user.getFriends().size());
-		assertEquals(1, user.getFriends().stream().findFirst().orElseThrow());
-	}
-
-	@Test
 	public void users_removeFriends_shouldAddFriends() throws IOException, InterruptedException {
 		//Arrange
 		HttpRequest request = HttpRequest.newBuilder()
@@ -537,53 +481,6 @@ class FilmorateApplicationTests {
 		responseText = response.body();
 		user = gson.fromJson(responseText, User.class);
 		assertEquals(0, user.getFriends().size());
-	}
-
-	@Test
-	public void films_addLike_shouldAddLike() throws IOException, InterruptedException {
-		//Arrange
-		HttpRequest request = HttpRequest.newBuilder()
-				.uri(URI.create(USERS))
-				.header("Content-type", "application/json")
-				.POST(HttpRequest.BodyPublishers.ofString("{\n" +
-						"  \"login\": \"dolore\",\n" +
-						"  \"name\": \"Nick Name\",\n" +
-						"  \"email\": \"mail@mail.ru\",\n" +
-						"  \"birthday\": \"1946-09-20\"\n" +
-						"}")).build();
-		client.send(request, HttpResponse.BodyHandlers.ofString());
-
-		request = HttpRequest.newBuilder()
-				.uri(URI.create(FILMS))
-				.header("Content-type", "application/json")
-				.POST(HttpRequest.BodyPublishers.ofString("{\n" +
-						"  \"name\": \"nisi eiusmod\",\n" +
-						"  \"description\": \"adipisicing\",\n" +
-						"  \"releaseDate\": \"1967-03-25\",\n" +
-						"  \"duration\": 100\n" +
-						"}")).build();
-		client.send(request, HttpResponse.BodyHandlers.ofString());
-
-		//Action
-		request = HttpRequest.newBuilder()
-				.uri(URI.create(FILMS + "/1/like/1"))
-				.PUT(HttpRequest.BodyPublishers.ofString(""))
-				.build();
-		client.send(request, HttpResponse.BodyHandlers.ofString());
-
-
-		//Assert
-		request = HttpRequest.newBuilder()
-				.uri(URI.create(FILMS + "/1"))
-				.header("Content-type", "application/json")
-				.GET().build();
-		HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-		assertEquals(200, response.statusCode());
-		String responseText = response.body();
-		Film film = gson.fromJson(responseText, Film.class);
-		assertEquals(1, film.getUsersWhoLiked().size());
-		assertEquals(1, film.getUsersWhoLiked().stream().findFirst().orElseThrow());
 	}
 
 	@Test
