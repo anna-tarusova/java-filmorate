@@ -1,13 +1,17 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.user.FilmService;
 
+import javax.validation.constraints.Positive;
 import java.util.List;
 
 @RestController
 @RequestMapping("/films")
+@Validated
 public class FilmController {
     private final FilmService filmService;
 
@@ -51,7 +55,14 @@ public class FilmController {
     }
 
     @GetMapping("popular")
-    public List<Film> getPopularFilms(@RequestParam(name = "count", defaultValue = "10") int count) {
+    public List<Film> getPopularFilms(
+            @RequestParam(name = "count", defaultValue = "10")
+            @Positive(message = "count не может быть меньше 0")
+            Integer count) {
+        if (count < 0) {
+            throw new ValidationException("Параметр count не может быть меньше 0");
+            //аннотации @Positive и @Validation не работают
+        }
         return filmService.popularFilms(count);
     }
 }

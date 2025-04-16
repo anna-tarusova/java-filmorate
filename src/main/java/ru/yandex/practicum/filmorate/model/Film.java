@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
 import lombok.AccessLevel;
@@ -19,6 +20,7 @@ public class Film {
     String description;
     LocalDate releaseDate;
     int duration;
+    @JsonIgnore
     Set<Long> usersWhoLiked = new HashSet<>();
 
     public void addUserWhoLiked(long id) {
