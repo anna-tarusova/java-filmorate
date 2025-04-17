@@ -1,78 +1,62 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.film.UserService;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 @RestController
 @RequestMapping("/users")
 public class UserController {
-    private static final Logger log = LoggerFactory.getLogger(UserController.class);
-    private final Map<Long, User> users = new HashMap<>();
+    private final UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     @GetMapping
-    public Collection<User> findAll() {
-        return users.values();
+    public List<User> findAll() {
+        return userService.getUsers();
     }
 
     @PostMapping
-    public User create(@RequestBody User user) {
-        log.debug("Вызван метод create");
-        // проверяем выполнение необходимых условий
-        checkUserBeforeAdd(user);
-        // формируем дополнительные данные
-        user.setId(getNextId());
-        if (user.getName() == null) {
-            user.setName(user.getLogin());
-        }
-        // сохраняем новую публикацию в памяти приложения
-        users.put((long) user.getId(), user);
-        return user;
+    public User addUser(@RequestBody User user) {
+        return userService.createUser(user);
     }
 
     @PutMapping
-    public User update(@RequestBody User user) {
-        log.debug("Вызван метод update");
-        checkUserBeforeAdd(user);
-        long id = user.getId();
-        User updated = users.get(id);
-        updated.setName(user.getName());
-        updated.setLogin(user.getLogin());
-        updated.setEmail(user.getEmail());
-        updated.setBirthday(user.getBirthday());
-
-        return user;
+    public User updateUser(@RequestBody User user) {
+        return userService.updateUser(user);
     }
 
-    public void checkUserBeforeAdd(User user) {
-        LocalDate currentDate = LocalDate.now();
-
-        if (user.getEmail().isBlank()
-                || !user.getEmail().contains("@")
-                || user.getLogin().isBlank() || user.getLogin().contains(" ")
-                || user.getBirthday().isAfter(currentDate)) {
-            log.error("Валидация не пройдена email={}, login={}, birthDate={}",
-                    user.getEmail(),
-                    user.getLogin(),
-                    user.getBirthday().format(DateTimeFormatter.ISO_DATE));
-            throw new ValidationException("Введенные данные не соответствуют критериям для добавления нового пользовате" +
-                    "ля");
-        }
+    @DeleteMapping("{id}")
+    public void deleteUser(@PathVariable long id) {
+        userService.deleteUser(id);
     }
 
-    private long getNextId() {
-        long maxKey = users.keySet().stream()
-                .max(Long::compareTo)
-                .orElse(0L);
+    @GetMapping("{id}")
+    public User getUser(@PathVariable long id) {
+        return userService.getUser(id);
+    }
 
-        return maxKey + 1;
+    @PutMapping("{id}/friends/{friendId}")
+    public void addToFriends(@PathVariable long id, @PathVariable long friendId) {
+        userService.addFriends(id, friendId);
+    }
+
+    @DeleteMapping("{id}/friends/{friendId}")
+    public void removeFromFriends(@PathVariable long id, @PathVariable long friendId) {
+        userService.removeFromFriends(id, friendId);
+    }
+
+    @GetMapping("{id}/friends")
+    public List<User> getFriends(@PathVariable long id) {
+        return userService.getFriends(id);
+    }
+
+    @GetMapping("{id}/friends/common/{otherId}")
+    public List<User> getCommonFriends(@PathVariable long id, @PathVariable long otherId) {
+        return userService.findIntersectionOfFriends(id, otherId);
     }
 }
