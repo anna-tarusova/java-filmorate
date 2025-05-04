@@ -1,6 +1,8 @@
 package ru.yandex.practicum.filmorate.service.film;
 
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -20,8 +22,8 @@ public class FilmService {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
     private final MpaStorage mpaStorage;
-    private final int MAX_DESCRIPTION_LENGTH = 100;
-    private final LocalDate MIN_RELEASE_DATE = LocalDate.parse("1895-03-22", DateTimeFormatter.ISO_DATE);
+    private static final LocalDate MIN_RELEASE_DATE = LocalDate.of(1895, 12, 28);
+    private static final Logger log = LoggerFactory.getLogger(FilmService.class);
 
     public void addLikeToFilm(long filmId, long userId) {
         Film film = filmStorage.getFilm(filmId);
@@ -54,22 +56,12 @@ public class FilmService {
     }
 
     public Film createFilm(Film film) {
-        if (film.getName().isBlank()) {
-            throw new ValidationException("Имя фильма не может быть пустым");
-        }
-        if (film.getDescription().length() > MAX_DESCRIPTION_LENGTH) {
-            throw new ValidationException("Слишком длинное описание");
-        }
-        if (film.getReleaseDate().isBefore(MIN_RELEASE_DATE)) {
-            throw new ValidationException(String.format("Дата не может быть раньше чем %s", MIN_RELEASE_DATE.format(DateTimeFormatter.ISO_DATE)));
-        }
-        if (film.getDuration() < 0) {
-            throw new ValidationException("Продолжительность не может быть меньше нуля");
-        }
+        checkFilmBeforeAddOrUpdate(film);
         return filmStorage.create(film);
     }
 
     public Film update(Film film) {
+        checkFilmBeforeAddOrUpdate(film);
         filmStorage.ensureFilmExists(film.getId());
         return filmStorage.update(film);
     }
@@ -80,5 +72,19 @@ public class FilmService {
 
     public Film getFilm(long id) {
         return filmStorage.getFilm(id);
+    }
+
+    public static void checkFilmBeforeAddOrUpdate(Film film) {
+        if (film.getName().isEmpty()
+                || (film.getDescription() != null && film.getDescription().length() > 200)
+                || film.getReleaseDate().isBefore(MIN_RELEASE_DATE)
+                || film.getDuration() < 0) {
+            log.error("Валидация не пройдена name={}, description={}, releaseDate={}, duration={}",
+                    film.getName(),
+                    film.getDescription(),
+                    film.getReleaseDate().format(DateTimeFormatter.ISO_DATE),
+                    film.getDuration());
+            throw new ValidationException("Введенные данные не соответствуют критериям для добавления нового фильма");
+        }
     }
 }
