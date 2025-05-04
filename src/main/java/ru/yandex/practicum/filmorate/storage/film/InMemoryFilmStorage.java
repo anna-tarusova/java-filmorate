@@ -19,7 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Component
+//@Component
 public class InMemoryFilmStorage implements FilmStorage {
 
     private static final Logger log = LoggerFactory.getLogger(FilmController.class);

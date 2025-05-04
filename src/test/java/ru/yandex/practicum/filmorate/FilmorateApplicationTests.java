@@ -7,6 +7,7 @@ import org.junit.jupiter.api.*;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.Configuration;
 import ru.yandex.practicum.filmorate.adapters.LocalDateAdapter;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
@@ -24,7 +25,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@SpringBootTest
+@Configuration
 class FilmorateApplicationTests {
 	private ConfigurableApplicationContext context;
 	private static final String BASE_URL = "http://localhost:8080/";

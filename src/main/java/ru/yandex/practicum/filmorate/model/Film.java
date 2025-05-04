@@ -20,6 +20,8 @@ public class Film {
     String description;
     LocalDate releaseDate;
     int duration;
+    int genreId;
+    int mpaRatingId;
     @JsonIgnore
     Set<Long> usersWhoLiked = new HashSet<>();
 
