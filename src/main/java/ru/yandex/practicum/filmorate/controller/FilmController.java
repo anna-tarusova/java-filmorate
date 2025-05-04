@@ -1,37 +1,76 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.mappers.film.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.service.user.FilmService;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.MpaRating;
+import ru.yandex.practicum.filmorate.requests.CreateFilmRequest;
+import ru.yandex.practicum.filmorate.service.mpa.MpaService;
+import ru.yandex.practicum.filmorate.service.film.FilmService;
+import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 
 import javax.validation.constraints.Positive;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import static ru.yandex.practicum.filmorate.mappers.film.FilmMapper.mapToFilmDto;
 
 @RestController
 @RequestMapping("/films")
 @Validated
+@RequiredArgsConstructor
 public class FilmController {
     private final FilmService filmService;
-
-    public FilmController(FilmService filmService) {
-        this.filmService = filmService;
-    }
+    private final MpaService mpaService;
+    private final GenreStorage genreStorage;
 
     @GetMapping
-    public List<Film> findAll() {
-        return this.filmService.getFilms();
+    public List<FilmDto> findAll() {
+        return this.filmService.getFilms().stream().map(FilmMapper::mapToFilmDto).collect(Collectors.toList());
     }
 
     @PostMapping
-    public Film addFilm(@RequestBody Film film) {
-        return this.filmService.createFilm(film);
+    public FilmDto addFilm(@RequestBody CreateFilmRequest request) {
+        Film film = new Film();
+        film.setName(request.getName());
+        film.setDescription(request.getDescription());
+        film.setReleaseDate(request.getReleaseDate());
+        film.setDuration(request.getDuration());
+
+        if (request.getGenres() != null) {
+            request.getGenres().forEach(genreRequest -> {
+                genreStorage.ensureGenreExists(genreRequest.getId());
+            });
+        }
+
+        mpaService.ensureMpaRatingExists(request.getMpa().getId());
+
+        MpaRating mpaRating = new MpaRating();
+        mpaRating.setId(request.getMpa().getId());
+        film.setMpaRating(mpaRating);
+
+        if (request.getGenres() == null) {
+            film.setGenres(List.of());
+        }
+        else {
+            film.setGenres(request.getGenres().stream().map(genreRequest -> {
+                Genre genre = new Genre();
+                genre.setId(genreRequest.getId());
+                return genre;
+            }).collect(Collectors.toList()));
+        }
+
+        return mapToFilmDto(this.filmService.createFilm(film));
     }
 
     @PutMapping
-    public Film updateFilm(@RequestBody Film film) {
-        return this.filmService.update(film);
+    public FilmDto updateFilm(@RequestBody Film film) {
+        return mapToFilmDto(this.filmService.update(film));
     }
 
     @DeleteMapping("{id}")
@@ -40,8 +79,9 @@ public class FilmController {
     }
 
     @GetMapping("{id}")
-    public Film getFilm(@PathVariable long id) {
-        return this.filmService.getFilm(id);
+    public FilmDto getFilm(@PathVariable long id) {
+        Film film = this.filmService.getFilm(id);
+        return mapToFilmDto(film);
     }
 
     @PutMapping("{id}/like/{userId}")
@@ -55,7 +95,7 @@ public class FilmController {
     }
 
     @GetMapping("popular")
-    public List<Film> getPopularFilms(
+    public List<FilmDto> getPopularFilms(
             @RequestParam(name = "count", defaultValue = "10")
             @Positive(message = "count не может быть меньше 0")
             Integer count) {
@@ -63,6 +103,9 @@ public class FilmController {
             throw new ValidationException("Параметр count не может быть меньше 0");
             //аннотации @Positive и @Validation не работают
         }
-        return filmService.popularFilms(count);
+        return filmService.popularFilms(count)
+                .stream()
+                .map(FilmMapper::mapToFilmDto)
+                .collect(Collectors.toList());
     }
 }

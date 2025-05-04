@@ -1,9 +1,14 @@
-package ru.yandex.practicum.filmorate.mappers;
+package ru.yandex.practicum.filmorate.mappers.film;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
+import ru.yandex.practicum.filmorate.mappers.genre.GenreMapper;
 import ru.yandex.practicum.filmorate.model.Film;
+
+import java.util.stream.Collectors;
+
+import static ru.yandex.practicum.filmorate.mappers.mpa.MpaMapper.mapMpaToDto;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class FilmMapper {
@@ -14,8 +19,12 @@ public class FilmMapper {
         dto.setDescription(film.getDescription());
         dto.setReleaseDate(film.getReleaseDate());
         dto.setDuration(film.getDuration());
-        //dto.setGenreId(film.getGenreId());
-        //dto.setMpaRatingId(film.getMpaRatingId());
+
+        if (film.getGenres() != null) {
+            dto.setGenres(film.getGenres().stream().map(GenreMapper::mapGenreToDto).collect(Collectors.toList()));
+        }
+
+        dto.setMpaRating(mapMpaToDto(film.getMpaRating()));
         return dto;
     }
 

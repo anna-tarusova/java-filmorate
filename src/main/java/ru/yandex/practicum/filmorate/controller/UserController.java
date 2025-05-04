@@ -2,15 +2,15 @@ package ru.yandex.practicum.filmorate.controller;
 
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.dto.UserDto;
-import ru.yandex.practicum.filmorate.mappers.UserMapper;
+import ru.yandex.practicum.filmorate.mappers.user.UserMapper;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.requests.UpdateUserRequest;
 import ru.yandex.practicum.filmorate.requests.CreateUserRequest;
-import ru.yandex.practicum.filmorate.service.film.UserService;
+import ru.yandex.practicum.filmorate.service.user.UserService;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import static ru.yandex.practicum.filmorate.mappers.UserMapper.mapToUserDto;
+import static ru.yandex.practicum.filmorate.mappers.user.UserMapper.mapToUserDto;
 
 @RestController
 @RequestMapping("/users")

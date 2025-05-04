@@ -7,6 +7,6 @@ import lombok.experimental.FieldDefaults;
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Genre {
-    public int id;
-    public String Name;
+    int id;
+    String Name;
 }
