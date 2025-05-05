@@ -8,7 +8,6 @@ import ru.yandex.practicum.filmorate.mappers.mpa.MpaRowMapper;
 import ru.yandex.practicum.filmorate.model.MpaRating;
 
 import java.util.List;
-import java.util.PropertyResourceBundle;
 
 @Repository
 @RequiredArgsConstructor
