@@ -50,11 +50,12 @@ public class FilmController {
             });
         }
 
-        mpaService.ensureMpaRatingExists(request.getMpa().getId());
-
-        MpaRating mpaRating = new MpaRating();
-        mpaRating.setId(request.getMpa().getId());
-        film.setMpaRating(mpaRating);
+        if (request.getMpa() != null) {
+            mpaService.ensureMpaRatingExists(request.getMpa().getId());
+            MpaRating mpaRating = new MpaRating();
+            mpaRating.setId(request.getMpa().getId());
+            film.setMpaRating(mpaRating);
+        }
 
         if (request.getGenres() == null) {
             film.setGenres(List.of());

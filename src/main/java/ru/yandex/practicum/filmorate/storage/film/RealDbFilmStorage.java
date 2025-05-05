@@ -35,7 +35,7 @@ public class RealDbFilmStorage implements FilmStorage {
     private final String SELECT_MPA_RATING = "SELECT r.Id, r.Name FROM public.\"MPA_RATING\" r " +
             "WHERE r.Id = ?";
     private final String UPDATE_USER_WIHOUT_MPA = "UPDATE public.\"FILM\" SET name = ?, description = ?, duration = ?, release_date = ? WHERE id = ?";
-    private final String UPDATE_USER = "UPDATE public.\"FILM\" SET name = ?, description = ?, duration = ?, release_date = ?, mpa_rating_id = ? WHERE id = ?";;
+    private final String UPDATE_USER = "UPDATE public.\"FILM\" SET name = ?, description = ?, duration = ?, release_date = ?, mpa_rating_id = ? WHERE id = ?";
     private final String CLEAR_GENRES_OF_FILM = "DELETE FROM public.\"FILM_GENRES\" WHERE FILM_ID = ?";
     private final String ADD_GENRE_TO_FILM = "INSERT INTO public.\"FILM_GENRES\" (FILM_ID, GENRE_ID) VALUES(?, ?)";
     private final String DELETE_FILM = "DELETE FROM public.\"FILM\" WHERE id = ?";
@@ -54,7 +54,7 @@ public class RealDbFilmStorage implements FilmStorage {
             ps.setString(2, film.getDescription());
             ps.setInt(3, film.getDuration());
             ps.setObject(4, film.getReleaseDate());
-            ps.setInt(5, film.getMpaRating().getId());
+            ps.setObject(5, film.getMpaRating() == null ? 1 : film.getMpaRating().getId());
             return ps;
         }, keyHolder);
 
@@ -68,7 +68,7 @@ public class RealDbFilmStorage implements FilmStorage {
         List<Genre> genres = jdbc.query(SELECT_GENRES_OF_FILM, genreRowMapper, generatedId);
         film.setGenres(genres);
 
-        MpaRating mpaRating = jdbc.queryForObject(SELECT_MPA_RATING, mpaRowMapper, film.getMpaRating().getId());
+        MpaRating mpaRating = jdbc.queryForObject(SELECT_MPA_RATING, mpaRowMapper, film.getMpaRating() == null ? 1 : film.getMpaRating().getId());
         film.setMpaRating(mpaRating);
 
         film.setId(generatedId);
