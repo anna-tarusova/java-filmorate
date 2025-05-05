@@ -5,7 +5,10 @@ import ru.yandex.practicum.filmorate.model.MpaRating;
 import java.util.List;
 
 public interface MpaStorage {
+
     List<MpaRating> getAll();
+
     MpaRating get(int id);
+
     void ensureMpaRatingExists(int id);
 }
