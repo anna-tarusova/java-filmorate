@@ -12,11 +12,11 @@ import java.util.List;
 public class GenreService {
     private final GenreStorage genreStorage;
 
-    public List<Genre> getMpaRatings() {
+    public List<Genre> getAll() {
         return genreStorage.getAll();
     }
 
-    public Genre getMpaRating(int id) {
+    public Genre getGenre(int id) {
         return genreStorage.get(id);
     }
 

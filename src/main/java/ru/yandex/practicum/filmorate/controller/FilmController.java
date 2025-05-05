@@ -15,7 +15,9 @@ import ru.yandex.practicum.filmorate.service.film.FilmService;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 
 import javax.validation.constraints.Positive;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static ru.yandex.practicum.filmorate.mappers.film.FilmMapper.mapToFilmDto;
@@ -58,7 +60,14 @@ public class FilmController {
             film.setGenres(List.of());
         }
         else {
-            film.setGenres(request.getGenres().stream().map(genreRequest -> {
+            Set<Integer> ids = new HashSet<>();
+            film.setGenres(request.getGenres().stream().filter(genreRequest -> {
+                if (ids.contains(genreRequest.getId())) {
+                    return false;
+                }
+                ids.add(genreRequest.getId());
+                return true;
+            }).map(genreRequest -> {
                 Genre genre = new Genre();
                 genre.setId(genreRequest.getId());
                 return genre;

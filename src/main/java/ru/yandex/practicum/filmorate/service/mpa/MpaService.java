@@ -12,7 +12,7 @@ import java.util.List;
 public class MpaService {
     private final MpaStorage mpaStorage;
 
-    public List<MpaRating> getMpaRatings() {
+    public List<MpaRating> getAll() {
         return mpaStorage.getAll();
     }
 

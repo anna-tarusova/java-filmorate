@@ -1,22 +1,17 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.controller.UserController;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.mappers.user.UserRowMapper;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 
@@ -25,6 +20,8 @@ import java.util.Objects;
 public class RealDbUserStorage implements UserStorage {
     private final JdbcTemplate jdbc;
     private final UserRowMapper mapper;
+
+    private final String INSERT_USER = "INSERT INTO PUBLIC.\"USER\" (EMAIL, NAME, LOGIN, BIRTHDATE) VALUES(?, ?, ?, ?)";
 
     @Override
     public User create(User user) {
@@ -52,13 +49,27 @@ public class RealDbUserStorage implements UserStorage {
     public User update(User user) {
         String sql = "UPDATE public.\"USER\" SET email = ?, name = ?, login = ?, birthdate = ? WHERE id = ?";
         jdbc.update(sql, user.getEmail(), user.getName(), user.getLogin(), user.getBirthday(), user.getId());
-        //теоретически может быть триггер, который изменит данные, поэтому достаем из бд
-        //или данные могу не обновиться из-за констрэйнтов
+        String deleteFriends = "DELETE PUBLIC.FRIENDSHIP WHERE USER_Id = ?";
+        jdbc.update(deleteFriends, user.getId());
+
+        String insertNewFriend = "MERGE INTO PUBLIC.FRIENDSHIP (User_Id, Friend_Id, Is_Approved) VALUES (?, ?, true)";
+        String insertNewFriend2 = "MERGE INTO PUBLIC.FRIENDSHIP (Friend_Id, User_Id, Is_Approved) VALUES (?, ?, false)";
+
+        if (user.getFriends() != null) {
+            user.getFriends().forEach(friend -> {
+                jdbc.update(insertNewFriend, user.getId(), friend);
+                jdbc.update(insertNewFriend2, user.getId(), friend);
+            });
+        }
         return getUser(user.getId());
     }
 
     @Override
     public void delete(long id) {
+        String deleteFromFriendship = "DELETE FROM PUBLIC.FRIENDSHIP WHERE User_id = ?";
+        jdbc.update(deleteFromFriendship, id);
+        String deleteFromFriendship2 = "DELETE FROM PUBLIC.FRIENDSHIP WHERE Friend_id = ?";
+        jdbc.update(deleteFromFriendship2, id);
         String query = "DELETE FROM public.\"USER\" WHERE id = ?";
         jdbc.update(query, id);
     }
@@ -70,7 +81,11 @@ public class RealDbUserStorage implements UserStorage {
         if ((long) users.size() == 0) {
             throw new NotFoundException(String.format("Пользователь с id=%d не найден", id));
         }
-        return users.getFirst();
+        User user = users.getFirst();
+        String friendsQuery = "SELECT Friend_Id FROM public.\"FRIENDSHIP\" where User_id = ? and Is_Approved = true";
+        List<Long> friends = jdbc.queryForList(friendsQuery, Long.class, user.getId());
+        user.setFriends(new HashSet<>(friends));
+        return user;
     }
 
     @Override

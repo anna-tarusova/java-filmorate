@@ -23,24 +23,20 @@ public class UserService {
 
     public void addFriends(long id1, long id2) {
         User user1 = userStorage.getUser(id1);
-        User user2 = userStorage.getUser(id2);
+        userStorage.ensureUserExists(id2);
 
-        user1.addFriend(user2.getId());
-        user2.addFriend(user1.getId());
+        user1.addFriend(id2);
 
         userStorage.update(user1);
-        userStorage.update(user2);
     }
 
     public void removeFromFriends(long id1, long id2) {
         User user1 = userStorage.getUser(id1);
-        User user2 = userStorage.getUser(id2);
+        userStorage.ensureUserExists(id2);
 
-        user1.deleteFriend(user2.getId());
-        user2.deleteFriend(user1.getId());
+        user1.deleteFriend(id2);
 
         userStorage.update(user1);
-        userStorage.update(user2);
     }
 
     public List<User> findIntersectionOfFriends(long userId1, long userId2) {

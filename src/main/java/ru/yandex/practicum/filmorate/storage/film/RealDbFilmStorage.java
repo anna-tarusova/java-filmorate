@@ -80,9 +80,9 @@ public class RealDbFilmStorage implements FilmStorage {
         jdbc.update(sql2, film.getId());
 
         if (film.getGenres() != null) {
-            film.getGenres().forEach(integer -> {
+            film.getGenres().forEach(genre -> {
                 String sql3 = "INSERT INTO public.\"FILM_GENRES\" (FILM_ID, GENRE_ID) VALUES(?, ?)";
-                jdbc.update(sql3, film.getId(), integer);
+                jdbc.update(sql3, film.getId(), genre.getId());
             });
         }
 
