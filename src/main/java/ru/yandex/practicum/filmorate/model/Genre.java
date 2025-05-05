@@ -8,5 +8,5 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Genre {
     int id;
-    String Name;
+    String name;
 }
