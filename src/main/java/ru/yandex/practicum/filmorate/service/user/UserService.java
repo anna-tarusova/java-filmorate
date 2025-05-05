@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service.user;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.controller.UserController;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -16,10 +17,13 @@ import java.util.List;
 import java.util.Set;
 
 @Service
-@RequiredArgsConstructor
 public class UserService {
     private final UserStorage userStorage;
     private static final Logger log = LoggerFactory.getLogger(UserService.class);
+
+    public UserService(@Qualifier("RealDbUserStorage") UserStorage userStorage) {
+        this.userStorage = userStorage;
+    }
 
     public void addFriends(long id1, long id2) {
         User user1 = userStorage.getUser(id1);

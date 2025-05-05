@@ -1,14 +1,13 @@
 package ru.yandex.practicum.filmorate.service.film;
 
-import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.MpaRating;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.mpa.MpaStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
@@ -17,13 +16,16 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class FilmService {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
-    private final MpaStorage mpaStorage;
     private static final LocalDate MIN_RELEASE_DATE = LocalDate.of(1895, 12, 28);
     private static final Logger log = LoggerFactory.getLogger(FilmService.class);
+
+    public FilmService(@Qualifier("RealDbFilmStorage") FilmStorage filmStorage, @Qualifier("RealDbUserStorage") UserStorage userStorage) {
+        this.filmStorage = filmStorage;
+        this.userStorage = userStorage;
+    }
 
     public void addLikeToFilm(long filmId, long userId) {
         Film film = filmStorage.getFilm(filmId);

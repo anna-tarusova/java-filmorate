@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -20,6 +21,7 @@ import java.util.Objects;
 
 @Repository
 @RequiredArgsConstructor
+@Qualifier("RealDbFilmStorage")
 public class RealDbFilmStorage implements FilmStorage {
     private final JdbcTemplate jdbc;
     private final FilmRowMapper mapper;

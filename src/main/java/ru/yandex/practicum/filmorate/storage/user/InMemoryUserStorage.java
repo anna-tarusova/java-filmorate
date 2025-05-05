@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage.user;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestBody;
 import ru.yandex.practicum.filmorate.controller.UserController;
@@ -15,7 +16,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-//@Component
+@Component
+@Qualifier("InMemoryUserStorage")
 public class InMemoryUserStorage implements UserStorage {
 
     private static final Logger log = LoggerFactory.getLogger(UserController.class);

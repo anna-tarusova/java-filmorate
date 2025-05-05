@@ -1,9 +1,11 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.mappers.user.UserRowMapper;
@@ -17,6 +19,7 @@ import java.util.Objects;
 
 @Repository
 @RequiredArgsConstructor
+@Qualifier("RealDbUserStorage")
 public class RealDbUserStorage implements UserStorage {
     private final JdbcTemplate jdbc;
     private final UserRowMapper mapper;
