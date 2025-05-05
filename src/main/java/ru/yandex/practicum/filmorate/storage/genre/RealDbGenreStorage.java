@@ -15,8 +15,8 @@ public class RealDbGenreStorage implements GenreStorage {
     private final JdbcTemplate jdbc;
     private final GenreRowMapper mapper;
 
-    private final String SELECT_ALL_GENRES = "SELECT * FROM public.\"GENRE\"";
-    private final String SELECT_GENRE = "SELECT * FROM public.\"GENRE\" where Id = ?";
+    private static final String SELECT_ALL_GENRES = "SELECT * FROM public.\"GENRE\"";
+    private static final String SELECT_GENRE = "SELECT * FROM public.\"GENRE\" where Id = ?";
 
     @Override
     public List<Genre> getAll() {

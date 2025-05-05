@@ -28,20 +28,20 @@ public class RealDbFilmStorage implements FilmStorage {
     private final GenreRowMapper genreRowMapper;
     private final MpaRowMapper mpaRowMapper;
 
-    private final String INSERT_NEW_FILM = "INSERT INTO PUBLIC.\"FILM\" (NAME, DESCRIPTION, DURATION, RELEASE_DATE, MPA_RATING_ID) VALUES(?, ?, ?, ?, ?)";
-    private final String INSERT_FILM_GENRES = "INSERT INTO public.\"FILM_GENRES\" (FILM_ID, GENRE_ID) VALUES(?, ?)";
-    private final String SELECT_GENRES_OF_FILM = "SELECT g.Id, g.Name FROM public.\"GENRE\" g JOIN public.\"FILM_GENRES\" fg ON (g.Id = fg.GENRE_ID) " +
+    private static final String INSERT_NEW_FILM = "INSERT INTO PUBLIC.\"FILM\" (NAME, DESCRIPTION, DURATION, RELEASE_DATE, MPA_RATING_ID) VALUES(?, ?, ?, ?, ?)";
+    private static final String INSERT_FILM_GENRES = "INSERT INTO public.\"FILM_GENRES\" (FILM_ID, GENRE_ID) VALUES(?, ?)";
+    private static final String SELECT_GENRES_OF_FILM = "SELECT g.Id, g.Name FROM public.\"GENRE\" g JOIN public.\"FILM_GENRES\" fg ON (g.Id = fg.GENRE_ID) " +
             "WHERE fg.FILM_ID = ?";
-    private final String SELECT_MPA_RATING = "SELECT r.Id, r.Name FROM public.\"MPA_RATING\" r " +
+    private static final String SELECT_MPA_RATING = "SELECT r.Id, r.Name FROM public.\"MPA_RATING\" r " +
             "WHERE r.Id = ?";
-    private final String UPDATE_USER_WIHOUT_MPA = "UPDATE public.\"FILM\" SET name = ?, description = ?, duration = ?, release_date = ? WHERE id = ?";
-    private final String UPDATE_USER = "UPDATE public.\"FILM\" SET name = ?, description = ?, duration = ?, release_date = ?, mpa_rating_id = ? WHERE id = ?";
-    private final String CLEAR_GENRES_OF_FILM = "DELETE FROM public.\"FILM_GENRES\" WHERE FILM_ID = ?";
-    private final String ADD_GENRE_TO_FILM = "INSERT INTO public.\"FILM_GENRES\" (FILM_ID, GENRE_ID) VALUES(?, ?)";
-    private final String DELETE_FILM = "DELETE FROM public.\"FILM\" WHERE id = ?";
-    private final String SELECT_FILM = "SELECT f.*, r.Name mpa_rating_name FROM public.\"FILM\" f LEFT JOIN public.\"MPA_RATING\" r ON (f.mpa_rating_id = r.Id) WHERE f.id = ?";
-    private final String SELECT_ALL_FILMS = "SELECT f.*, r.Name mpa_rating_name FROM public.\"FILM\" f LEFT JOIN public.\"MPA_RATING\" r ON (f.mpa_rating_id =  r.Id)";
-    private final String CHECK_IF_FILM_EXISTS = "SELECT count(*) FROM public.\"FILM\" WHERE id = ?";
+    private static final String UPDATE_USER_WITHOUT_MPA = "UPDATE public.\"FILM\" SET name = ?, description = ?, duration = ?, release_date = ? WHERE id = ?";
+    private static final String UPDATE_USER = "UPDATE public.\"FILM\" SET name = ?, description = ?, duration = ?, release_date = ?, mpa_rating_id = ? WHERE id = ?";
+    private static final String CLEAR_GENRES_OF_FILM = "DELETE FROM public.\"FILM_GENRES\" WHERE FILM_ID = ?";
+    private static final String ADD_GENRE_TO_FILM = "INSERT INTO public.\"FILM_GENRES\" (FILM_ID, GENRE_ID) VALUES(?, ?)";
+    private static final String DELETE_FILM = "DELETE FROM public.\"FILM\" WHERE id = ?";
+    private static final String SELECT_FILM = "SELECT f.*, r.Name mpa_rating_name FROM public.\"FILM\" f LEFT JOIN public.\"MPA_RATING\" r ON (f.mpa_rating_id = r.Id) WHERE f.id = ?";
+    private static final String SELECT_ALL_FILMS = "SELECT f.*, r.Name mpa_rating_name FROM public.\"FILM\" f LEFT JOIN public.\"MPA_RATING\" r ON (f.mpa_rating_id =  r.Id)";
+    private static final String CHECK_IF_FILM_EXISTS = "SELECT count(*) FROM public.\"FILM\" WHERE id = ?";
 
 
     @Override
@@ -78,7 +78,7 @@ public class RealDbFilmStorage implements FilmStorage {
     @Override
     public Film update(Film film) {
         if (film.getMpaRating() == null) {
-            jdbc.update(UPDATE_USER_WIHOUT_MPA, film.getName(), film.getDescription(), film.getDuration(), film.getReleaseDate(), film.getId());
+            jdbc.update(UPDATE_USER_WITHOUT_MPA, film.getName(), film.getDescription(), film.getDuration(), film.getReleaseDate(), film.getId());
         }
         else {
             jdbc.update(UPDATE_USER, film.getName(), film.getDescription(), film.getDuration(), film.getReleaseDate(), film.getMpaRating().getId(), film.getId());

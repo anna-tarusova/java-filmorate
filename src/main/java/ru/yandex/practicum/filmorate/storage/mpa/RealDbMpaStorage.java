@@ -15,8 +15,8 @@ public class RealDbMpaStorage implements MpaStorage {
     private final JdbcTemplate jdbc;
     private final MpaRowMapper mapper;
 
-    private final String SELECT_ALL_RATINGS = "SELECT * FROM public.\"MPA_RATING\"";
-    private final String SELECT_RATING = "SELECT * FROM public.\"MPA_RATING\" where Id = ?";
+    private static final String SELECT_ALL_RATINGS = "SELECT * FROM public.\"MPA_RATING\"";
+    private static final String SELECT_RATING = "SELECT * FROM public.\"MPA_RATING\" where Id = ?";
 
     @Override
     public List<MpaRating> getAll() {

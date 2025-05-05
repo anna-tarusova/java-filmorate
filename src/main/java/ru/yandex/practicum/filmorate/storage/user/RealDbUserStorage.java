@@ -23,17 +23,17 @@ public class RealDbUserStorage implements UserStorage {
     private final JdbcTemplate jdbc;
     private final UserRowMapper mapper;
 
-    private final String INSERT_USER = "INSERT INTO public.\"USER\" (EMAIL, NAME, LOGIN, BIRTHDATE) VALUES(?, ?, ?, ?)";
-    private final String UPDATE_USER = "UPDATE public.\"USER\" SET email = ?, name = ?, login = ?, birthdate = ? WHERE id = ?";
-    private final String DELETE_USER = "DELETE FROM public.\"USER\" WHERE id = ?";
-    private final String SELECT_USER = "SELECT * FROM public.\"USER\" WHERE id = ?";
-    private final String DELETE_FRIENDS = "DELETE PUBLIC.FRIENDSHIP WHERE USER_Id = ?";
-    private final String ADD_NEW_FRIEND = "MERGE INTO PUBLIC.FRIENDSHIP (User_Id, Friend_Id, Is_Approved) VALUES (?, ?, true)";
-    private final String REQUEST_TO_BE_FRIEND = "MERGE INTO PUBLIC.FRIENDSHIP (Friend_Id, User_Id, Is_Approved) VALUES (?, ?, false)";
-    private final String DELETE_REQUESTS_TO_FRIENDS = "DELETE FROM PUBLIC.FRIENDSHIP WHERE Friend_id = ?";
-    private final String SELECT_FRIENDS = "SELECT Friend_Id FROM public.FRIENDSHIP where User_id = ? and Is_Approved = true";
-    private final String CHECK_IF_USER_EXISTS = "SELECT count(*) FROM public.\"USER\" WHERE id = ?";
-    private final String SELECT_ALL_USERS = "SELECT * FROM public.\"USER\"";
+    private static final String INSERT_USER = "INSERT INTO public.\"USER\" (EMAIL, NAME, LOGIN, BIRTHDATE) VALUES(?, ?, ?, ?)";
+    private static final String UPDATE_USER = "UPDATE public.\"USER\" SET email = ?, name = ?, login = ?, birthdate = ? WHERE id = ?";
+    private static final String DELETE_USER = "DELETE FROM public.\"USER\" WHERE id = ?";
+    private static final String SELECT_USER = "SELECT * FROM public.\"USER\" WHERE id = ?";
+    private static final String DELETE_FRIENDS = "DELETE PUBLIC.FRIENDSHIP WHERE USER_Id = ?";
+    private static final String ADD_NEW_FRIEND = "MERGE INTO PUBLIC.FRIENDSHIP (User_Id, Friend_Id, Is_Approved) VALUES (?, ?, true)";
+    private static final String REQUEST_TO_BE_FRIEND = "MERGE INTO PUBLIC.FRIENDSHIP (Friend_Id, User_Id, Is_Approved) VALUES (?, ?, false)";
+    private static final String DELETE_REQUESTS_TO_FRIENDS = "DELETE FROM PUBLIC.FRIENDSHIP WHERE Friend_id = ?";
+    private static final String SELECT_FRIENDS = "SELECT Friend_Id FROM public.FRIENDSHIP where User_id = ? and Is_Approved = true";
+    private static final String CHECK_IF_USER_EXISTS = "SELECT count(*) FROM public.\"USER\" WHERE id = ?";
+    private static final String SELECT_ALL_USERS = "SELECT * FROM public.\"USER\"";
 
     @Override
     public User create(User user) {
