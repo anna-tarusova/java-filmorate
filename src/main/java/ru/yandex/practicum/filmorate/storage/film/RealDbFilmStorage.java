@@ -79,8 +79,7 @@ public class RealDbFilmStorage implements FilmStorage {
     public Film update(Film film) {
         if (film.getMpaRating() == null) {
             jdbc.update(UPDATE_USER_WITHOUT_MPA, film.getName(), film.getDescription(), film.getDuration(), film.getReleaseDate(), film.getId());
-        }
-        else {
+        } else {
             jdbc.update(UPDATE_USER, film.getName(), film.getDescription(), film.getDuration(), film.getReleaseDate(), film.getMpaRating().getId(), film.getId());
         }
 
