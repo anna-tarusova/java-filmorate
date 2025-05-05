@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
@@ -44,7 +45,7 @@ public class FilmController {
         film.setReleaseDate(request.getReleaseDate());
         film.setDuration(request.getDuration());
 
-        if (request.getGenres() != null) {
+        if (!CollectionUtils.isEmpty(request.getGenres())) {
             request.getGenres().forEach(genreRequest -> {
                 genreStorage.ensureGenreExists(genreRequest.getId());
             });
@@ -59,8 +60,7 @@ public class FilmController {
 
         if (request.getGenres() == null) {
             film.setGenres(List.of());
-        }
-        else {
+        } else {
             Set<Integer> ids = new HashSet<>();
             film.setGenres(request.getGenres().stream().filter(genreRequest -> {
                 if (ids.contains(genreRequest.getId())) {
