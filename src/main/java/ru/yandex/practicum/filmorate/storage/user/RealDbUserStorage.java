@@ -21,17 +21,24 @@ public class RealDbUserStorage implements UserStorage {
     private final JdbcTemplate jdbc;
     private final UserRowMapper mapper;
 
-    private final String INSERT_USER = "INSERT INTO PUBLIC.\"USER\" (EMAIL, NAME, LOGIN, BIRTHDATE) VALUES(?, ?, ?, ?)";
+    private final String INSERT_USER = "INSERT INTO public.\"USER\" (EMAIL, NAME, LOGIN, BIRTHDATE) VALUES(?, ?, ?, ?)";
+    private final String UPDATE_USER = "UPDATE public.\"USER\" SET email = ?, name = ?, login = ?, birthdate = ? WHERE id = ?";
+    private final String DELETE_USER = "DELETE FROM public.\"USER\" WHERE id = ?";
+    private final String SELECT_USER = "SELECT * FROM public.\"USER\" WHERE id = ?";
+    private final String DELETE_FRIENDS = "DELETE PUBLIC.FRIENDSHIP WHERE USER_Id = ?";
+    private final String ADD_NEW_FRIEND = "MERGE INTO PUBLIC.FRIENDSHIP (User_Id, Friend_Id, Is_Approved) VALUES (?, ?, true)";
+    private final String REQUEST_TO_BE_FRIEND = "MERGE INTO PUBLIC.FRIENDSHIP (Friend_Id, User_Id, Is_Approved) VALUES (?, ?, false)";
+    private final String DELETE_REQUESTS_TO_FRIENDS = "DELETE FROM PUBLIC.FRIENDSHIP WHERE Friend_id = ?";
+    private final String SELECT_FRIENDS = "SELECT Friend_Id FROM public.FRIENDSHIP where User_id = ? and Is_Approved = true";
+    private final String CHECK_IF_USER_EXISTS = "SELECT count(*) FROM public.\"USER\" WHERE id = ?";
+    private final String SELECT_ALL_USERS = "SELECT * FROM public.\"USER\"";
 
     @Override
     public User create(User user) {
-        String sql = "INSERT INTO PUBLIC.\"USER\"\n" +
-                "(EMAIL, NAME, LOGIN, BIRTHDATE) VALUES(?, ?, ?, ?)";
-
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         jdbc.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            PreparedStatement ps = connection.prepareStatement(INSERT_USER, Statement.RETURN_GENERATED_KEYS);
             ps.setString(1, user.getEmail());
             ps.setObject(2, user.getName());
             ps.setObject(3, user.getLogin());
@@ -47,18 +54,13 @@ public class RealDbUserStorage implements UserStorage {
 
     @Override
     public User update(User user) {
-        String sql = "UPDATE public.\"USER\" SET email = ?, name = ?, login = ?, birthdate = ? WHERE id = ?";
-        jdbc.update(sql, user.getEmail(), user.getName(), user.getLogin(), user.getBirthday(), user.getId());
-        String deleteFriends = "DELETE PUBLIC.FRIENDSHIP WHERE USER_Id = ?";
-        jdbc.update(deleteFriends, user.getId());
-
-        String insertNewFriend = "MERGE INTO PUBLIC.FRIENDSHIP (User_Id, Friend_Id, Is_Approved) VALUES (?, ?, true)";
-        String insertNewFriend2 = "MERGE INTO PUBLIC.FRIENDSHIP (Friend_Id, User_Id, Is_Approved) VALUES (?, ?, false)";
+        jdbc.update(UPDATE_USER, user.getEmail(), user.getName(), user.getLogin(), user.getBirthday(), user.getId());
+        jdbc.update(DELETE_FRIENDS, user.getId());
 
         if (user.getFriends() != null) {
             user.getFriends().forEach(friend -> {
-                jdbc.update(insertNewFriend, user.getId(), friend);
-                jdbc.update(insertNewFriend2, user.getId(), friend);
+                jdbc.update(ADD_NEW_FRIEND, user.getId(), friend);
+                jdbc.update(REQUEST_TO_BE_FRIEND, user.getId(), friend);
             });
         }
         return getUser(user.getId());
@@ -66,32 +68,26 @@ public class RealDbUserStorage implements UserStorage {
 
     @Override
     public void delete(long id) {
-        String deleteFromFriendship = "DELETE FROM PUBLIC.FRIENDSHIP WHERE User_id = ?";
-        jdbc.update(deleteFromFriendship, id);
-        String deleteFromFriendship2 = "DELETE FROM PUBLIC.FRIENDSHIP WHERE Friend_id = ?";
-        jdbc.update(deleteFromFriendship2, id);
-        String query = "DELETE FROM public.\"USER\" WHERE id = ?";
-        jdbc.update(query, id);
+        jdbc.update(DELETE_FRIENDS, id);
+        jdbc.update(DELETE_REQUESTS_TO_FRIENDS, id);
+        jdbc.update(DELETE_USER, id);
     }
 
     @Override
     public User getUser(long id) {
-        String query = "SELECT * FROM public.\"USER\" WHERE id = ?";
-        List<User> users = jdbc.query(query, mapper, id);
+        List<User> users = jdbc.query(SELECT_USER, mapper, id);
         if ((long) users.size() == 0) {
             throw new NotFoundException(String.format("Пользователь с id=%d не найден", id));
         }
         User user = users.getFirst();
-        String friendsQuery = "SELECT Friend_Id FROM public.\"FRIENDSHIP\" where User_id = ? and Is_Approved = true";
-        List<Long> friends = jdbc.queryForList(friendsQuery, Long.class, user.getId());
+        List<Long> friends = jdbc.queryForList(SELECT_FRIENDS, Long.class, user.getId());
         user.setFriends(new HashSet<>(friends));
         return user;
     }
 
     @Override
     public void ensureUserExists(long id) throws NotFoundException {
-        String query = "SELECT count(*) FROM public.\"USER\" WHERE id = ?";
-        long count = jdbc.queryForObject(query, Long.class, id);
+        long count = jdbc.queryForObject(CHECK_IF_USER_EXISTS, Long.class, id);
         if (count == 0) {
             throw new NotFoundException(String.format("User с id=%d не найден", id));
         }
@@ -99,7 +95,6 @@ public class RealDbUserStorage implements UserStorage {
 
     @Override
     public List<User> getUsers() {
-        String query = "SELECT * FROM public.\"USER\"";
-        return jdbc.query(query, mapper);
+        return jdbc.query(SELECT_ALL_USERS, mapper);
     }
 }

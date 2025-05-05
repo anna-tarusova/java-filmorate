@@ -26,15 +26,28 @@ public class RealDbFilmStorage implements FilmStorage {
     private final GenreRowMapper genreRowMapper;
     private final MpaRowMapper mpaRowMapper;
 
+    private final String INSERT_NEW_FILM = "INSERT INTO PUBLIC.\"FILM\" (NAME, DESCRIPTION, DURATION, RELEASE_DATE, MPA_RATING_ID) VALUES(?, ?, ?, ?, ?)";
+    private final String INSERT_FILM_GENRES = "INSERT INTO public.\"FILM_GENRES\" (FILM_ID, GENRE_ID) VALUES(?, ?)";
+    private final String SELECT_GENRES_OF_FILM = "SELECT g.Id, g.Name FROM public.\"GENRE\" g JOIN public.\"FILM_GENRES\" fg ON (g.Id = fg.GENRE_ID) " +
+            "WHERE fg.FILM_ID = ?";
+    private final String SELECT_MPA_RATING = "SELECT r.Id, r.Name FROM public.\"MPA_RATING\" r " +
+            "WHERE r.Id = ?";
+    private final String UPDATE_USER_WIHOUT_MPA = "UPDATE public.\"FILM\" SET name = ?, description = ?, duration = ?, release_date = ? WHERE id = ?";
+    private final String UPDATE_USER = "UPDATE public.\"FILM\" SET name = ?, description = ?, duration = ?, release_date = ?, mpa_rating_id = ? WHERE id = ?";;
+    private final String CLEAR_GENRES_OF_FILM = "DELETE FROM public.\"FILM_GENRES\" WHERE FILM_ID = ?";
+    private final String ADD_GENRE_TO_FILM = "INSERT INTO public.\"FILM_GENRES\" (FILM_ID, GENRE_ID) VALUES(?, ?)";
+    private final String DELETE_FILM = "DELETE FROM public.\"FILM\" WHERE id = ?";
+    private final String SELECT_FILM = "SELECT f.*, r.Name mpa_rating_name FROM public.\"FILM\" f LEFT JOIN public.\"MPA_RATING\" r ON (f.mpa_rating_id = r.Id) WHERE f.id = ?";
+    private final String SELECT_ALL_FILMS = "SELECT f.*, r.Name mpa_rating_name FROM public.\"FILM\" f LEFT JOIN public.\"MPA_RATING\" r ON (f.mpa_rating_id =  r.Id)";
+    private final String CHECK_IF_FILM_EXISTS = "SELECT count(*) FROM public.\"FILM\" WHERE id = ?";
+
 
     @Override
     public Film create(Film film) {
-        String sql = "INSERT INTO PUBLIC.\"FILM\" (NAME, DESCRIPTION, DURATION, RELEASE_DATE, MPA_RATING_ID) VALUES(?, ?, ?, ?, ?)";
-
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         jdbc.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            PreparedStatement ps = connection.prepareStatement(INSERT_NEW_FILM, Statement.RETURN_GENERATED_KEYS);
             ps.setString(1, film.getName());
             ps.setString(2, film.getDescription());
             ps.setInt(3, film.getDuration());
@@ -47,18 +60,13 @@ public class RealDbFilmStorage implements FilmStorage {
         long generatedId = Objects.requireNonNull(keyHolder.getKey()).longValue();
 
         film.getGenres().forEach(genre -> {
-            String sql3 = "INSERT INTO public.\"FILM_GENRES\" (FILM_ID, GENRE_ID) VALUES(?, ?)";
-            jdbc.update(sql3, generatedId, genre.getId());
+            jdbc.update(INSERT_FILM_GENRES, generatedId, genre.getId());
         });
 
-        String sql4 = "SELECT g.Id, g.Name FROM public.\"GENRE\" g JOIN public.\"FILM_GENRES\" fg ON (g.Id = fg.GENRE_ID) " +
-                "WHERE fg.FILM_ID = ?";
-        List<Genre> genres = jdbc.query(sql4, genreRowMapper, generatedId);
+        List<Genre> genres = jdbc.query(SELECT_GENRES_OF_FILM, genreRowMapper, generatedId);
         film.setGenres(genres);
 
-        String sql5 = "SELECT r.Id, r.Name FROM public.\"MPA_RATING\" r " +
-                "WHERE r.Id = ?";
-        MpaRating mpaRating = jdbc.queryForObject(sql5, mpaRowMapper, film.getMpaRating().getId());
+        MpaRating mpaRating = jdbc.queryForObject(SELECT_MPA_RATING, mpaRowMapper, film.getMpaRating().getId());
         film.setMpaRating(mpaRating);
 
         film.setId(generatedId);
@@ -68,21 +76,17 @@ public class RealDbFilmStorage implements FilmStorage {
     @Override
     public Film update(Film film) {
         if (film.getMpaRating() == null) {
-            String sql = "UPDATE public.\"FILM\" SET name = ?, description = ?, duration = ?, release_date = ? WHERE id = ?";
-            jdbc.update(sql, film.getName(), film.getDescription(), film.getDuration(), film.getReleaseDate(), film.getId());
+            jdbc.update(UPDATE_USER_WIHOUT_MPA, film.getName(), film.getDescription(), film.getDuration(), film.getReleaseDate(), film.getId());
         }
         else {
-            String sql = "UPDATE public.\"FILM\" SET name = ?, description = ?, duration = ?, release_date = ?, mpa_rating_id = ? WHERE id = ?";
-            jdbc.update(sql, film.getName(), film.getDescription(), film.getDuration(), film.getReleaseDate(), film.getMpaRating().getId(), film.getId());
+            jdbc.update(UPDATE_USER, film.getName(), film.getDescription(), film.getDuration(), film.getReleaseDate(), film.getMpaRating().getId(), film.getId());
         }
 
-        String sql2 = "DELETE FROM public.\"FILM_GENRES\" WHERE FILM_ID = ?";
-        jdbc.update(sql2, film.getId());
+        jdbc.update(CLEAR_GENRES_OF_FILM, film.getId());
 
         if (film.getGenres() != null) {
             film.getGenres().forEach(genre -> {
-                String sql3 = "INSERT INTO public.\"FILM_GENRES\" (FILM_ID, GENRE_ID) VALUES(?, ?)";
-                jdbc.update(sql3, film.getId(), genre.getId());
+                jdbc.update(ADD_GENRE_TO_FILM, film.getId(), genre.getId());
             });
         }
 
@@ -91,33 +95,27 @@ public class RealDbFilmStorage implements FilmStorage {
 
     @Override
     public void delete(long id) {
-        String query = "DELETE FROM public.\"FILM\" WHERE id = ?";
-        jdbc.update(query, id);
+        jdbc.update(DELETE_FILM, id);
     }
 
     @Override
     public Film getFilm(long id) {
-        String query = "SELECT f.*, r.Name mpa_rating_name FROM public.\"FILM\" f LEFT JOIN public.\"MPA_RATING\" r ON (f.mpa_rating_id = r.Id) WHERE f.id = ?";
-        List<Film> films = jdbc.query(query, mapper, id);
+        List<Film> films = jdbc.query(SELECT_FILM, mapper, id);
         if ((long) films.size() == 0) {
             throw new NotFoundException(String.format("Фильм с id=%d не найден", id));
         }
-        String genreQuery = "SELECT g.Id, g.Name FROM public.\"GENRE\" g JOIN public.\"FILM_GENRES\" fg " +
-                "ON (fg.Genre_id = g.Id) WHERE fg.film_id = ?";
+
         Film film = films.getFirst();
-        List<Genre> genres = jdbc.query(genreQuery, genreRowMapper, film.getId());
+        List<Genre> genres = jdbc.query(SELECT_GENRES_OF_FILM, genreRowMapper, film.getId());
         film.setGenres(genres);
         return film;
     }
 
     @Override
     public List<Film> getFilms() {
-        String query = "SELECT f.*, r.Name mpa_rating_name FROM public.\"FILM\" f LEFT JOIN public.\"MPA_RATING\" r ON (f.mpa_rating_id =  r.Id)";
-        String genreQuery = "SELECT g.Id, g.Name FROM public.\"GENRE\" g JOIN public.\"FILM_GENRES\" fg " +
-                "ON (fg.Genre_id = g.Id) WHERE fg.film_id = ?";
-        List<Film> films = jdbc.query(query, mapper);
+        List<Film> films = jdbc.query(SELECT_ALL_FILMS, mapper);
         films.forEach(film -> {
-            List<Genre> genres = jdbc.query(genreQuery, genreRowMapper, film.getId());
+            List<Genre> genres = jdbc.query(SELECT_GENRES_OF_FILM, genreRowMapper, film.getId());
             film.setGenres(genres);
         });
         return films;
@@ -125,8 +123,7 @@ public class RealDbFilmStorage implements FilmStorage {
 
     @Override
     public void ensureFilmExists(long id) throws NotFoundException {
-        String query = "SELECT count(*) FROM public.\"FILM\" WHERE id = ?";
-        long count = jdbc.queryForObject(query, Long.class, id);
+        long count = jdbc.queryForObject(CHECK_IF_FILM_EXISTS, Long.class, id);
         if (count == 0) {
             throw new NotFoundException(String.format("Фильм с id=%d не найден", id));
         }

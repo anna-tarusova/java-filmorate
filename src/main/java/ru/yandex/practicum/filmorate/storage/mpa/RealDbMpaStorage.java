@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.mappers.mpa.MpaRowMapper;
 import ru.yandex.practicum.filmorate.model.MpaRating;
 
 import java.util.List;
+import java.util.PropertyResourceBundle;
 
 @Repository
 @RequiredArgsConstructor
@@ -15,16 +16,17 @@ public class RealDbMpaStorage implements MpaStorage {
     private final JdbcTemplate jdbc;
     private final MpaRowMapper mapper;
 
+    private final String SELECT_ALL_RATINGS = "SELECT * FROM public.\"MPA_RATING\"";
+    private final String SELECT_RATING = "SELECT * FROM public.\"MPA_RATING\" where Id = ?";
+
     @Override
     public List<MpaRating> getAll() {
-        String query = "SELECT * FROM public.\"MPA_RATING\"";
-        return jdbc.query(query, mapper);
+        return jdbc.query(SELECT_ALL_RATINGS, mapper);
     }
 
     @Override
     public MpaRating get(int id) {
-        String query = "SELECT * FROM public.\"MPA_RATING\" where Id = ?";
-        List<MpaRating> list = jdbc.query(query, mapper, id);
+        List<MpaRating> list = jdbc.query(SELECT_RATING, mapper, id);
         if (list.isEmpty()) {
             throw new NotFoundException(String.format("Не найден mpa-рейтинг с id=%d", id));
         }

@@ -16,16 +16,17 @@ public class RealDbGenreStorage implements GenreStorage {
     private final JdbcTemplate jdbc;
     private final GenreRowMapper mapper;
 
+    private final String SELECT_ALL_GENRES = "SELECT * FROM public.\"GENRE\"";
+    private final String SELECT_GENRE = "SELECT * FROM public.\"GENRE\" where Id = ?";
+
     @Override
     public List<Genre> getAll() {
-        String query = "SELECT * FROM public.\"GENRE\"";
-        return jdbc.query(query, mapper);
+        return jdbc.query(SELECT_ALL_GENRES, mapper);
     }
 
     @Override
     public Genre get(int id) {
-        String query = "SELECT * FROM public.\"GENRE\" where Id = ?";
-        List<Genre> list = jdbc.query(query, mapper, id);
+        List<Genre> list = jdbc.query(SELECT_GENRE, mapper, id);
         if (list.isEmpty()) {
             throw new NotFoundException(String.format("Не найден жанр с id=%d", id));
         }
