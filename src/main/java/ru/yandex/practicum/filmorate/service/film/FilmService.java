@@ -44,9 +44,8 @@ public class FilmService {
     }
 
     public List<Film> popularFilms(int count) {
-        return filmStorage.getFilms()
+        return filmStorage.getPopularFilms(count)
                 .stream().sorted((a, b) -> Integer.compare(b.countOfLikes(), a.countOfLikes()))
-                .limit(count)
                 .collect(Collectors.toList());
     }
 

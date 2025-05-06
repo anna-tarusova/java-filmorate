@@ -79,6 +79,12 @@ public class InMemoryFilmStorage implements FilmStorage {
         return result;
     }
 
+    public List<Film> getPopularFilms(long count) {
+        List<Film> result = new ArrayList<>(films.size());
+        result.addAll(films.values().stream().limit(count).toList());
+        return result;
+    }
+
     @Override
     public void ensureFilmExists(long id) throws NotFoundException {
         if (!films.containsKey(id)) {
