@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.mappers.film;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.springframework.util.CollectionUtils;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.mappers.genre.GenreMapper;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -20,7 +21,7 @@ public class FilmMapper {
         dto.setReleaseDate(film.getReleaseDate());
         dto.setDuration(film.getDuration());
 
-        if (film.getGenres() != null) {
+        if (!CollectionUtils.isEmpty(film.getGenres())) {
             dto.setGenres(film.getGenres().stream().map(GenreMapper::mapGenreToDto).collect(Collectors.toList()));
         }
 

@@ -6,6 +6,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.CollectionUtils;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.mappers.user.UserRowMapper;
 import ru.yandex.practicum.filmorate.model.User;
@@ -59,7 +60,7 @@ public class RealDbUserStorage implements UserStorage {
         jdbc.update(UPDATE_USER, user.getEmail(), user.getName(), user.getLogin(), user.getBirthday(), user.getId());
         jdbc.update(DELETE_FRIENDS, user.getId());
 
-        if (user.getFriends() != null) {
+        if (!CollectionUtils.isEmpty(user.getFriends())) {
             user.getFriends().forEach(friend -> {
                 jdbc.update(ADD_NEW_FRIEND, user.getId(), friend);
                 jdbc.update(REQUEST_TO_BE_FRIEND, user.getId(), friend);
