@@ -1,10 +1,16 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.dto.UserDto;
+import ru.yandex.practicum.filmorate.mappers.user.UserMapper;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.service.film.UserService;
+import ru.yandex.practicum.filmorate.requests.UpdateUserRequest;
+import ru.yandex.practicum.filmorate.requests.CreateUserRequest;
+import ru.yandex.practicum.filmorate.service.user.UserService;
 
 import java.util.List;
+import java.util.stream.Collectors;
+import static ru.yandex.practicum.filmorate.mappers.user.UserMapper.mapToUserDto;
 
 @RestController
 @RequestMapping("/users")
@@ -16,18 +22,31 @@ public class UserController {
     }
 
     @GetMapping
-    public List<User> findAll() {
-        return userService.getUsers();
+    public List<UserDto> findAll() {
+        return userService.getUsers().stream().map(UserMapper::mapToUserDto)
+                .collect(Collectors.toList());
     }
 
     @PostMapping
-    public User addUser(@RequestBody User user) {
-        return userService.createUser(user);
+    public UserDto addUser(@RequestBody CreateUserRequest request) {
+        User user = new User();
+        user.setName(request.getName());
+        user.setEmail(request.getEmail());
+        user.setLogin(request.getLogin());
+        user.setBirthday(request.getBirthday());
+        return mapToUserDto(userService.createUser(user));
     }
 
     @PutMapping
-    public User updateUser(@RequestBody User user) {
-        return userService.updateUser(user);
+    public UserDto updateUser(@RequestBody UpdateUserRequest request) {
+        User user = new User();
+        user.setId(request.getId());
+        user.setLogin(request.getLogin());
+        user.setName(request.getName());
+        user.setEmail(request.getEmail());
+        user.setBirthday(request.getBirthday());
+        User updatedUser = userService.updateUser(user);
+        return mapToUserDto(updatedUser);
     }
 
     @DeleteMapping("{id}")
@@ -36,8 +55,9 @@ public class UserController {
     }
 
     @GetMapping("{id}")
-    public User getUser(@PathVariable long id) {
-        return userService.getUser(id);
+    public UserDto getUser(@PathVariable long id) {
+        User user = userService.getUser(id);
+        return mapToUserDto(user);
     }
 
     @PutMapping("{id}/friends/{friendId}")
@@ -51,12 +71,19 @@ public class UserController {
     }
 
     @GetMapping("{id}/friends")
-    public List<User> getFriends(@PathVariable long id) {
-        return userService.getFriends(id);
+    public List<UserDto> getFriends(@PathVariable long id) {
+        return userService
+                .getFriends(id)
+                .stream()
+                .map(UserMapper::mapToUserDto)
+                .collect(Collectors.toList());
     }
 
     @GetMapping("{id}/friends/common/{otherId}")
-    public List<User> getCommonFriends(@PathVariable long id, @PathVariable long otherId) {
-        return userService.findIntersectionOfFriends(id, otherId);
+    public List<UserDto> getCommonFriends(@PathVariable long id, @PathVariable long otherId) {
+        return userService.findIntersectionOfFriends(id, otherId)
+                .stream()
+                .map(UserMapper::mapToUserDto)
+                .collect(Collectors.toList());
     }
 }

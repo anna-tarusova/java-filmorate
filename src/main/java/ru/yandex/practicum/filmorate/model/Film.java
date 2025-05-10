@@ -7,6 +7,7 @@ import lombok.AccessLevel;
 
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -20,6 +21,8 @@ public class Film {
     String description;
     LocalDate releaseDate;
     int duration;
+    List<Genre> genres;
+    MpaRating mpaRating;
     @JsonIgnore
     Set<Long> usersWhoLiked = new HashSet<>();
 

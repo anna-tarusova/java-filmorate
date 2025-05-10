@@ -18,5 +18,7 @@ public interface FilmStorage {
 
     List<Film> getFilms();
 
+    List<Film> getPopularFilms(long count);
+
     void ensureFilmExists(long id) throws NotFoundException;
 }

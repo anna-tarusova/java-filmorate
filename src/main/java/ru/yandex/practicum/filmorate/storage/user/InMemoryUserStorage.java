@@ -2,20 +2,19 @@ package ru.yandex.practicum.filmorate.storage.user;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestBody;
 import ru.yandex.practicum.filmorate.controller.UserController;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Component
+@Qualifier("InMemoryUserStorage")
 public class InMemoryUserStorage implements UserStorage {
 
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
@@ -24,8 +23,6 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public User create(@RequestBody User user) {
         log.debug("Вызван метод create");
-        // проверяем выполнение необходимых условий
-        checkUserBeforeAddOrUpdate(user);
         // формируем дополнительные данные
         user.setId(getNextId());
         if (user.getName() == null) {
@@ -39,7 +36,6 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public User update(@RequestBody User user) {
         log.debug("Вызван метод update");
-        checkUserBeforeAddOrUpdate(user);
         long id = user.getId();
         User updated = users.get(id);
         updated.setName(user.getName());
@@ -55,22 +51,6 @@ public class InMemoryUserStorage implements UserStorage {
     public void delete(long id) {
         log.debug("Вызван метод delete");
         users.remove(id);
-    }
-
-    public void checkUserBeforeAddOrUpdate(User user) {
-        LocalDate currentDate = LocalDate.now();
-
-        if (user.getEmail().isBlank()
-                || !user.getEmail().contains("@")
-                || user.getLogin().isBlank() || user.getLogin().contains(" ")
-                || user.getBirthday().isAfter(currentDate)) {
-            log.error("Валидация не пройдена email={}, login={}, birthDate={}",
-                    user.getEmail(),
-                    user.getLogin(),
-                    user.getBirthday().format(DateTimeFormatter.ISO_DATE));
-            throw new ValidationException("Введенные данные не соответствуют критериям для добавления нового пользовате" +
-                    "ля");
-        }
     }
 
     public User getUser(long id) {
